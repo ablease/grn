@@ -1,0 +1,3 @@
+#! /usr/bin/env bash
+set -x
+go build -o grn cmd/grn/main.go
