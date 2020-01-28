@@ -50,6 +50,18 @@ func main() {
 	}
 
 	// Output as HTML
+	// <tr>
+	// <td>on-demand-service-broker</td>
+	// <td>0.36.0</td>
+	// </tr>
+
+	for release, version := range releaseVersions {
+		fmt.Println("<tr>")
+		fmt.Printf("    <td>%s</td>\n", release)
+		fmt.Printf("    <td>%s</td>\n", version)
+		fmt.Println("</tr>")
+	}
+
 }
 
 func GenerateReleaseNotes() string {
