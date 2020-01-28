@@ -41,13 +41,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Unzipped:\n" + strings.Join(files, "\n"))
-
 	releaseFiles := releaseFiles(files)
 
 	releaseVersions := extractReleaseVersions(releaseFiles)
 
-	fmt.Println("Releases:\n" + strings.Join(releases, "\n"))
+	for release, version := range releaseVersions {
+		fmt.Printf("Release Name: %s, Version: %s \n", release, version)
+	}
 }
 
 func GenerateReleaseNotes() string {
@@ -75,15 +75,16 @@ func isRelease(file string) bool {
 	return strings.Contains(file, "releases/release")
 }
 
-func extractReleaseVersions(files []string) map[string]int {
-	rvs = make(map[string]int)
+func extractReleaseVersions(files []string) map[string]string {
+	// We want release name + release version
+	rvs := make(map[string]string)
 
 	for _, file := range files {
-		release = strings.TrimPrefix(file, "/tmp/grn/releases/release-")
+		release := strings.TrimPrefix(file, "/tmp/grn/releases/release-")
 
-		versionRegex = regexp.MustCompile(`\d\W\d\W\d`)
-		version = versionRegex.FindAll([]byte(release), -1)
-		m[release] = version
+		versionRegex := regexp.MustCompile(`(\d+\.)?(\d+\.)?(\*|\d+)`)
+		version := versionRegex.Find([]byte(release))
+		rvs[release] = string(version)
 	}
 
 	return rvs
