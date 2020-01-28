@@ -27,7 +27,7 @@ func main() {
 	}
 
 	// cleanup
-	// defer rmDir(path)
+	defer rmDir(path)
 
 	// Fetch tile
 	tile, err := tilefetcher.Fetch(path)
@@ -48,6 +48,8 @@ func main() {
 	for release, version := range releaseVersions {
 		fmt.Printf("Release Name: %s, Version: %s \n", release, version)
 	}
+
+	// Output as HTML
 }
 
 func GenerateReleaseNotes() string {
@@ -61,7 +63,6 @@ func rmDir(path string) {
 }
 
 func releaseFiles(files []string) []string {
-	// go has no generics so we need to extract releases from the list of files
 	releases := make([]string, 0)
 	for _, file := range files {
 		if isRelease(file) {
@@ -77,22 +78,24 @@ func isRelease(file string) bool {
 
 func extractReleaseVersions(files []string) map[string]string {
 	// We want release name + release version
+	// E.G turn  "/tmp/grn/releases/release-service-metrics-1.12.1.on-ubuntu-xenial-stemcell.315.99.tgz"
+	// into "service-metrics 1.12.1"
+
 	rvs := make(map[string]string)
 
 	for _, file := range files {
 		release := strings.TrimPrefix(file, "/tmp/grn/releases/release-")
 
 		versionRegex := regexp.MustCompile(`(\d+\.)?(\d+\.)?(\*|\d+)`)
-		version := versionRegex.Find([]byte(release))
-		rvs[release] = string(version)
+		v := versionRegex.Find([]byte(release))
+		version := string(v)
+
+		r := strings.Split(release, version)
+		releaseWithoutVersion := r[0]
+		releaseWithoutSuffix := strings.TrimSuffix(releaseWithoutVersion, "-")
+
+		rvs[releaseWithoutSuffix] = string(version)
 	}
 
 	return rvs
 }
-
-// 1. Download a built tile
-//      Specify a tile minor (1.15, 1.16, 1.17)
-//      Tiles are uploaded to s3
-//      Download the latest minor that the passed the product pipeline
-// 2. Dissect tile
-// 3. Extract release names and versions
