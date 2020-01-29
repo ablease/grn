@@ -13,12 +13,16 @@ import (
 )
 
 func main() {
-	tileVersion := flag.String("tile-version", "1.18", "Tile Version you want to generate release notes for.")
+
+	if len(os.Args) < 2 {
+		fmt.Println("No args provided. See `grn -h`")
+		os.Exit(1)
+	}
+
+	//rabbitmq-1.18/archive/p-rabbitmq-1.18.4-build.7.pivotal
+	tileInS3 := flag.String("tile", "rabbitmq-1.18/archive/p-rabbitmq-1.18.4-build.7.pivotal", "tile path in s3 you want to generate release notes for.")
 
 	flag.Parse()
-
-	fmt.Println(GenerateReleaseNotes())
-	fmt.Println("tile-version:", *tileVersion)
 
 	// create working directory
 	path := "/tmp/grn/"
@@ -30,7 +34,7 @@ func main() {
 	defer rmDir(path)
 
 	// Fetch tile
-	tile, err := tilefetcher.Fetch(path)
+	tile, err := tilefetcher.Fetch(path, *tileInS3)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -45,27 +49,16 @@ func main() {
 
 	releaseVersions := extractReleaseVersions(releaseFiles)
 
-	for release, version := range releaseVersions {
-		fmt.Printf("Release Name: %s, Version: %s \n", release, version)
-	}
+	outputHTML(releaseVersions)
+}
 
-	// Output as HTML
-	// <tr>
-	// <td>on-demand-service-broker</td>
-	// <td>0.36.0</td>
-	// </tr>
-
+func outputHTML(releaseVersions map[string]string) {
 	for release, version := range releaseVersions {
 		fmt.Println("<tr>")
 		fmt.Printf("    <td>%s</td>\n", release)
 		fmt.Printf("    <td>%s</td>\n", version)
 		fmt.Println("</tr>")
 	}
-
-}
-
-func GenerateReleaseNotes() string {
-	return "Generate Release Notes"
 }
 
 func rmDir(path string) {

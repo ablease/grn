@@ -29,7 +29,7 @@ func (m *MyProvider) IsExpired() bool {
 	return false
 }
 
-func Fetch(path string) (string, error) {
+func Fetch(path, tile string) (string, error) {
 	creds := credentials.NewCredentials(&MyProvider{})
 
 	// Specify the region
@@ -46,14 +46,14 @@ func Fetch(path string) (string, error) {
 		return "", fmt.Errorf("failed to create file %q, %v", file, err)
 	}
 
-	fmt.Println("Downloading tile. This could take a while...")
+	fmt.Printf("Downloading tile %s This could take a while...\n", tile)
 	n, err := downloader.Download(file, &s3.GetObjectInput{
 		Bucket: aws.String("pcf-rabbitmq-pipelines"),
-		Key:    aws.String("rabbitmq-1.18/archive/p-rabbitmq-1.18.1-build.30.pivotal"),
+		Key:    aws.String(tile),
 	})
 
 	if err != nil {
-		return "", fmt.Errorf("failed to download file, %v, err")
+		return "", fmt.Errorf("failed to download file, %v", err)
 	}
 
 	fmt.Printf("file downloaded, %d bytes\n", n)
